@@ -1,0 +1,363 @@
+% ファイル先頭から\begin{document}までの内容（プレアンブル）については，
+% 基本的に { } の中を書き換えるだけでよい．
+\documentclass[autodetect-engine,dvi=dvipdfmx,ja=standard,
+               a4j,11pt]{bxjsarticle}
+
+%%======== プレアンブル ============================================%%
+% 用紙設定：指示があれば，適切な余白に設定しなおす
+\RequirePackage{geometry}
+\geometry{reset,paperwidth=210truemm,paperheight=297truemm}
+\geometry{hmargin=25truemm,top=20truemm,bottom=25truemm,footskip=10truemm,headheight=0mm}
+%\geometry{showframe} % 本文の"枠"を確認したければ，コメントアウト
+
+% 設定：図の挿入
+% http://www.edu.cs.okayama-u.ac.jp/info/tool_guide/tex.html#graphicx
+\usepackage{graphicx}
+
+% 設定：ソースコードの挿入
+% http://www.edu.cs.okayama-u.ac.jp/info/tool_guide/tex.html#fancyvrb
+\usepackage{fancyvrb}
+\renewcommand{\theFancyVerbLine}{\texttt{\footnotesize{\arabic{FancyVerbLine}:}}}
+
+%%======== レポートタイトル等 ======================================%%
+% ToDo: 提出要領に従って，適切なタイトル・サブタイトルを設定する
+\title{名簿管理プログラム \\
+       |\Large{独自コマンドを添えて}|}
+
+% ToDo: 自分自身の氏名と学生番号に書き換える
+\author{氏名: 中嶋 空偉 (NAKAJIMA, Sorai) \\
+        学生番号: 09B23549}
+
+% ToDo: レポート課題等の指示に従って適切に書き換える
+\date{出題日: 2024年6月12日 \\
+      提出日: 2024年6月19日 \\
+      締切日: 2024年7月24日 \\}  % 注：最後の\\は不要に見えるが必要．
+
+
+%%======== 本文 ====================================================%%
+\begin{document}
+\maketitle
+% 目次つきの表紙ページにする場合はコメントを外す
+%{\footnotesize \tableofcontents \newpage}
+
+%% 本文は以下に書く．課題に応じて適切な章立てを構成すること．
+%% 章＝\section，節＝\subsection，項＝\subsubsection である．
+
+%--------------------------------------------------------------------%
+\section{概要} \label{sec:abstract}
+構造体と配列を用いて，大量のデータを扱うC言語プログラムの基本を学ぶ．
+その過程で，標準入力から「ID, 氏名, 誕生日, 住所, 備考」からなる情報を管理する
+名簿管理プログラムを作成する．このプログラムでは，上の形式で入力するとデータが保存される．
+また，\verb|%|から始まるコマンドを入力すると，内容を表示，プログラムの停止，保存数の参照，探索，ファイルへの書き込み，
+読み込み，データの整列などができる．
+
+本レポートでは，探索，ファイルへの書き込み，読み込み，データの整列のコマンドを実装していく．
+
+
+演習中に取り組んだ課題として，
+以下の課題4から課題7についての内容を報告する．
+
+\begin{description}
+  \item[課題1]名簿管理プログラムの要件や仕様を踏まえたプログラム作成方針の検討
+  \item[課題2]コマンド実装と考察(a)\%Fコマンド
+  \item[課題3]コマンド実装と考察(b)\%Rコマンドと\%Wコマンド
+  \item[課題4]コマンド実装と考察(a)\%Sコマンド
+  \item[課題5]コマンド実装と考察(a)\%独自コマンド
+  \item[課題6]プログラム全体に対する考察
+  \item[課題7]発展課題の実装
+
+  %本文の記述と矛盾しないように注意すること．
+\end{description}
+
+% 以下は，レポートB以降で必須の考察についての書き方の例．
+また，考察課題として，以下の観点での考察をおこない，\ref{consider}章にまとめた．
+
+\begin{description}
+  \item[考察1]メモリ上のデータ配置と構造体のサイズに関する考察 （\ref{consider1}節)
+  \item[考察2] エラー処理に関する考察（\ref{consider2}節）
+  %本文の記述と矛盾しないように注意すること．
+\end{description}
+\clearpage
+%--------------------------------------------------------------------%
+
+\section{プログラムの作成方針} \label{sec:plan-of-programming}
+    
+
+本演習で作成したプログラムが満たすべき要件と仕様として，
+「(1) 基本要件」と「(2) 基本仕様」を示す．
+% 追加仕様も書くなら，書き変えを忘れずに
+
+\subsection*{(1) 基本要件}
+% ...ction* と，アスタリスクを入れている点に注意．数字無しの節や項目が作られる．
+
+\begin{enumerate}
+  \item プログラムは，その実行中，少なくとも10000件の名簿データをメモリ中に保持できるようにすること．
+  \item 名簿データは，「ID，氏名，誕生日，住所，備考」を一つのデータとして扱えるようにすること．
+  \item プログラムとしての動作や名簿データの管理のために，以下の機能を持つコマンドを実装すること．
+  \begin{enumerate}
+    \item プログラムの正常な終了
+    \item 登録された名簿データのデータ数表示
+    \item 名簿データの全数表示，および，部分表示
+  \end{enumerate}
+  \item 標準入力からのユーザ入力を通して，データ登録やデータ管理の操作を可能とすること．
+  \item 標準出力にはコマンドの実行結果のみを出力すること．      % サンプルのため省略
+\end{enumerate}
+% Tips: enumerateの行間を調整するなら，以下の様に調整用のコマンドを入れる．
+% \begin{enumerate}
+%   \setlength{\parskip}{0em} \setlength{\itemsep}{0.25em}   % <--
+%   \item ...
+%   \item
+
+\subsection*{(2) 基本仕様}
+
+\begin{enumerate}
+  \item 名簿データは，コンマ区切りの文字列（\textbf{CSV入力}と呼ぶ）で表されるものとし，%
+        Listing~\ref{lst:csvdata}に示したようなテキストデータを処理できるようにする．%
+        %CSV入力の詳細は，\ref{sec:sepc_csv}節に示す．  % <-- この1文は，レポートでは不要
+  \item コマンドは，\%で始まる文字列（\textbf{コマンド入力}と呼ぶ）とし，表\ref{tab:commands}にあげたコマンドをすべて実装する
+  \item 1つの名簿データは，C言語の構造体 (\texttt{struct}) を用いて，構造を持ったデータとしてプログラム中に定義し，利用する．
+  \item 全名簿データは，"何らかのデータ構造"を用いて，メモリ中に保持できるようにする．
+  \item コマンドの実行結果以外の出力は，標準エラー出力に出力する．  % サンプルのため省略
+  
+\end{enumerate}
+
+\subsection{プログラムの全体像}
+%practice7-1参照
+\subsection{名簿管理プログラムの実装方針}
+%各コマンドについて各一段落で記載する．5.3.2参照/
+\clearpage
+%--------------------------------------------------------------------%
+\section{プログラムの実装と考察}
+  \subsection{コマンドの実装と考察(a)\texttt{\%F}コマンド}
+
+    \subsubsection{プログラムの説明}
+    
+    この関数が呼び出されると、与えられた引数を使って\texttt{profile\_data\_store}配列内のプロファイルを検索する．
+
+      \begin{itemize}
+        \item \textbf{引数} 引数として文字列ポインタ\texttt{word}を受け取る。この\texttt{word}が探索する際のキーワードとなる．
+        \item \textbf{動き}
+        \begin{enumerate}
+          \item \texttt{profile\_data\_store}配列を一つずつ見ていって、各プロファイルをチェックしていく．
+          \item 各プロファイルに対して以下のチェックを行う．:
+          \begin{enumerate}
+            \item プロファイルIDを\texttt{sprintf}を使って文字列に変換し、\texttt{strcat}を使って\texttt{word}と比較する．IDが一致した場合、そのプロファイルの情報を出力する．
+            \item \texttt{word}とプロファイルのコメント、名前、住所を上と同じように比較し、いずれかが一致した場合、そのプロファイルの情報を出力する．
+            \item プロファイルの誕生日を文字列に変換し、\texttt{word}と同じように比較する．誕生日が一致した場合、そのプロファイルの情報を出力する．
+          \end{enumerate}
+        \end{enumerate}
+      \end{itemize}
+    \subsubsection{プログラムの動作確認}
+
+    \subsubsection{実装にあたっての考察}
+    この関数の実装にあたって\texttt{atoi}についてエラーが多く起こってしまったのでなぜうまくいかなかったのかについて考察する．
+    \begin{itemize}
+      \item \textbf{変換方法}:
+        \texttt{atoi}は文字列が数字でない場合，いくつかの動作を行う．例えば，12345abcが入力されたとき12345と数字以外のものがくる
+        まで変換して返す．abcが入力されたときは，変換できずに0が返される．数字の0が返されたのか，
+        文字列を変換した結果返されたのがが分からないため，エラーの原因になりえる．
+      \item \textbf{比較方法}:
+        文字列と整数の比較
+        を行う場合，変換がうまくいかなかった場合，その後に影響する場合もある．特に、文字列である場合、エラーが起こる．
+    \end{itemize}
+    いづれかの理由でエラーがおこってしまう．そのため今回は\texttt{sprintf}を使用して
+    整数値を文字列に合わせるほうが確実だと考え，そちらを採用した．
+\clearpage
+  \subsection{コマンドの実装と考察(b)\texttt{\%R}コマンドと\texttt{\%W}コマンド}
+    \subsubsection{\%Rコマンドの説明}
+    この関数が呼び出されると，与えられたファイルからデータを読み取り，プロファイルを作成し，
+    \texttt{profile\_data\_store}配列に格納する．
+    \begin{itemize}
+      \item\textbf{ファイルのオープン}：
+      ファイルの名前が引数として渡されると，\texttt{fopen}関数により引数と一致するファイルが読み取りモード\texttt{"r"}で開かれる．
+      開くのに失敗したときエラーとして出力される．
+      \item\textbf{ファイルからのデータ読み込み}：
+      texttt{fget}関数を使って\texttt{file}から\texttt{line}に一行ずつ格納する．
+      その際，\texttt{subst}関数で改行文字をnull文字に変える．不要な改行をなくす．
+      \item \textbf{プロファイルの作成と格納}：
+      \texttt{profile\_data\_item}が\texttt{MAX\_PROFILES}以上であればエラーを返す．それ未満であれば，
+      \texttt{profile}型の構造体を定義し，profileに格納していく関数\texttt{new\_profile}に渡す．
+      その際，\texttt{profile\_data\_item}を1増やす．作成できなかった場合はエラーを返す．
+      \item \textbf{ファイルのクローズ}：
+      データの読み込み後に\texttt{fclose}関数によってファイルを閉じる．
+
+
+    \end{itemize}
+    \subsubsection{\%Wコマンドの説明}
+    この関数が呼び出されると，引数によって与えられたファイルに現在保持しているデータを書き込む，
+    
+    \begin{itemize}
+      \item\textbf{ファイルのオープン}：
+      ファイルの名前が引数として渡されると，\texttt{fopen}関数により引数と一致するファイルが書き込みモード\texttt{"r"}で開かれる．
+      開くのに失敗したときエラーとして出力される．
+      \item\textbf{ファイルへのデータ読み込み}：
+      \texttt{profile\_data\_item}に基づいて/texttt{for}ループを実行する．
+      それぞれのデータを構造体のポインタに格納する．その後，\texttt{csv}形式に合ったデータを
+      \texttt{fprintf}関数によってファイルに保存していく．
+      \item \textbf{ファイルのクローズ}：
+      データの書き込み後に\texttt{fclose}関数によってファイルを閉じる．
+
+
+    \end{itemize}
+    \subsubsection{プログラムの動作確認}
+
+    \subsubsection{実装にあたっての考察}
+    この関数の実装にあたって\texttt{get\_line}関数を変更するべきか，それとも新しくすべきか考えたので考察していく．
+    \texttt{get\_line}関数を標準入力とファイルからの読み込みに対してどちらも対応した改良版のコードはこの後記載している．
+    \begin{itemize}
+      \item \textbf{まとめることのメリット}：
+        \texttt{get\_line}関数をまとめることによって同じような関数を2回定義しなくてよいので簡潔なコードになる．
+        また，エラーや修正が必要な改善が求められたときに修正箇所が少なくて済む．
+      \clearpage
+      \item \textbf{まとめることのデメリット}：標準入力のときのみ追加したい事項や
+      ファイルのときのみ追加したいエラーなどがあった場合に実装しづらい．また，\texttt{\%R}コマンドの時にのみしか必要ないにもかかわらず，
+      多く使用されるであろう標準入力のときにも\texttt{if(file == NULL)}という条件分岐が発生するため，処理速度に影響があると推測できる．
+      
+    \end{itemize}
+    \texttt{get\_line}関数をまとめることによって簡潔さなどが向上する反面，
+    実際は時間のかかる処理ではないため，影響はないかもしれないが，1万という大きなデータを扱う上では大きな差になってしまうかもしれない．
+    \begin{Verbatim}[numbers=left, xleftmargin=10mm, numbersep=6pt,
+      fontsize=\small, baselinestretch=0.8]
+      int get_line(char *line, int size, FILE *file) {
+    if (file == NULL) {
+        if (fgets(line, 1024, stdin) != NULL) {
+            subst(line, '\n', '\0');
+            return 1;
+        }
+    } else {
+        if (fgets(line, 1024, file) != NULL) {
+            subst(line, '\n', '\0');
+            return 1;
+        }
+    }
+    return 0;
+}
+    \end{Verbatim}
+  \subsection{コマンドの実装と考察(c)\texttt{\%S}コマンド}
+
+  \subsubsection{プログラムの説明}
+  この関数は、\texttt{cmd\_sort}が呼び出されると，int型の引数\texttt{column}によって
+  id，名前，誕生日，住所，備考について並び替える．なお，並び替えた後の表示の機能はない．
+  このソートはバブルソートのアルゴリズムに基づいている．
+
+  \begin{itemize}
+    \item \textbf{引数} 引数としてint型の引数\texttt{column}を受け取る。この\texttt{column}がソートする際のキーワードとなる．
+    \item \textbf{動き}
+    \begin{enumerate}
+      \item \texttt{swap\_profile}関数:メモリ効率のために構造体のポインタを通して\texttt{profile}を交換する．
+      \item \texttt{switch文}により\texttt{column}の値に応じてそれぞれソートを行う．
+      \item バブルソートを行っていく，要素同士を比較して入れ替える関数をそれぞれの要素に対して用意している．
+            
+            \texttt{id}のとき，それぞれを\texttt{sprintf}によって文字列に変換する．\texttt{strcmp}により比較する．
+            この値が正の時，\texttt{swap}関数によって入れ替える．
+
+            \texttt{birthday}のとき，それぞれを\texttt{sprintf}によって年，月，日付をつなげて文字列に変換する．
+            \texttt{strcmp}により比較する．この値が正の時，\texttt{swap}関数によって入れ替える．
+
+            \texttt{name},\texttt{address},\texttt{comment}のとき,\texttt{strcmp}により比較する．この値が正の時，\texttt{swap}関数によって入れ替える．
+  
+  
+    \end{enumerate}
+  \end{itemize}
+  
+
+    \subsubsection{プログラムの動作確認}
+
+    \subsubsection{実装にあたっての考察}
+    この関数の実装にあたって計算量がどのようになっているのか気になったので各関数の計算量，改善案について考察する．
+    \begin{itemize}
+      \item \textbf{計算量}：
+        \texttt{swap\_profile}関数は構造体のコピーが3回ある．コピー操作はO(1)なので全体はO(1)．
+        \texttt{sort\_id}関数などの比較して並び替える関数は与えられたデータを文字列に変換して比較し，
+        必要であれば\texttt{swap\_profile}関数を呼び出す．
+        それぞれの操作はO(1)なので全体の操作はO(1)．\texttt{cmd\_sort関数}はそれぞれの分岐に対して\texttt{for}ループにより
+        N回ループの中でN回ループが実行される．その中で計算量$O(1)$の関数が実行される．よって全体の計算量は$O(N^2)$となる
+      \item \textbf{改善案1}：クイックソートやマージソートなどのソート法に変える．
+      これらのソート法は平均計算量が$N \log N$なので計算量を減らすことができる．
+      \item \textbf{改善案2}：比較する際の文字列の変換を減らす．
+      現状，比較する際にすべてのデータを文字列に変換しているが，idやbirthdayは数値のまま比較することで
+      計算量は変換するために必要な分だけ計算量は減る．
+        
+    \end{itemize}
+    
+
+  \subsection{コマンドの実装と考察(d)独自コマンド}
+    \subsubsection{\%Dコマンドの説明}
+    この関数が呼び出されると，\texttt{id}が一致するものを探し，その\texttt{profile}データを削除する．
+    \begin{itemize}
+      \item\textbf{探索}：
+      idが引数として渡されると，引数と一致するidをもつプロファイルが1から順に探索される．
+      \item\textbf{メモリの解放}：
+      \texttt{free}関数を用いて，探索で見つかったプロファイルの\texttt{comment}フィールドのメモリを解放する．
+      メモリの解放がないとのちにメモリの圧迫により，エラーや動作が重くなる原因になる．
+      \item \textbf{profileの削除}：
+      見つかったプロファイルがあった場所にその次のプロファイルを格納していく．\texttt{for}ループによって一つずつずらして
+      プロファイルを削除する．最後に\texttt{profile\_data\_items}を1減らす．
+
+    \end{itemize}
+    \subsubsection{プログラムの動作確認}
+
+    \subsubsection{実装にあたっての考察}
+    この関数を実装するうえで計算時間が多くなってしまっているのではないかと考えたので考察する．
+    \begin{itemize}
+      \item \textbf{計算量}：
+        \texttt{}
+      \item \textbf{改善案1：二分探索法の実装}
+    \end{itemize}
+%--------------------------------------------------------------------%
+\section{プログラム全体の考察}\label{cosider}
+  \subsection{メモリ上のデータ配置と構造体のサイズに関する考察}\label{cosider1}
+  \subsection{エラー処理に関する考察}\label{cosider2}
+
+
+%--------------------------------------------------------------------%
+\section{発展課題}
+  
+
+
+%--------------------------------------------------------------------%
+\section{感想}
+
+
+%--------------------------------------------------------------------%
+\section{作成したプログラムのソースコード}
+% 参照を適切に直すか，記述を見直す必要がある．
+
+作成したプログラムを以下に添付する．
+なお，\ref{sec:abstract}章に示した課題については，
+\ref{xxxx}章で示したようにすべて正常に動作したことを付記しておく．
+
+% Verbatim environment
+% プリアンブルで \usepackage{fancyvrb} が必要．
+%   - numbers           行番号を表示．left なら左に表示．
+%   - xleftmargin       枠の左の余白．行番号表示用に余白を与えたい．
+%   - numbersep         行番号と枠の間隙 (gap)．デフォルトは 12 pt．
+%   - fontsize          フォントサイズ指定
+%   - baselinestretch   行間の大きさを比率で指定．デフォルトは 1.0．
+\begin{Verbatim}[numbers=left, xleftmargin=10mm, numbersep=6pt,
+                    fontsize=\small, baselinestretch=0.8]
+#include <stdio.h>
+
+int main()
+{
+    char s[4] = {'A', 'B', 'C', '\0'};
+
+    printf("s = %s\n", s);
+
+    return 0;
+}
+\end{Verbatim}
+
+%--------------------------------------------------------------------%
+% 参考文献
+%   以下は，書き方の例である．実際に，参考にした書籍等を見て書くこと．
+%   本文で引用する際は，\cite{book:algodata}などとすればよい．
+\begin{thebibliography}{99}
+  \bibitem{book:algodata} 平田富雄，アルゴリズムとデータ構造，森北出版，1990.
+  \bibitem{book:label2} 著者名，書名，出版社，発行年.
+  \bibitem{www:label3} WWWページタイトル，URL，アクセス日.
+\end{thebibliography}
+
+%--------------------------------------------------------------------%
+%% 本文はここより上に書く（\begin{document}～\end{document}が本文である）
+\end{document}
