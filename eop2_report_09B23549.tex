@@ -30,7 +30,7 @@
 
 % ToDo: レポート課題等の指示に従って適切に書き換える
 \date{出題日: 2024年6月12日 \\
-      提出日: 2024年6月19日 \\
+      提出日: 2024年7月14日 \\
       締切日: 2024年7月24日 \\}  % 注：最後の\\は不要に見えるが必要．
 
 
@@ -61,8 +61,8 @@
   \item[課題1]名簿管理プログラムの要件や仕様を踏まえたプログラム作成方針の検討
   \item[課題2]コマンド実装と考察(a)\%Fコマンド
   \item[課題3]コマンド実装と考察(b)\%Rコマンドと\%Wコマンド
-  \item[課題4]コマンド実装と考察(a)\%Sコマンド
-  \item[課題5]コマンド実装と考察(a)\%独自コマンド
+  \item[課題4]コマンド実装と考察(c)\%Sコマンド
+  \item[課題5]コマンド実装と考察(d)\%独自コマンド
   \item[課題6]プログラム全体に対する考察
   \item[課題7]発展課題の実装
 
@@ -120,11 +120,93 @@
   \item コマンドの実行結果以外の出力は，標準エラー出力に出力する．  % サンプルのため省略
   
 \end{enumerate}
+\clearpage
+\begin{table}[t]  %表の位置は原則として t または b．h や H は使わない．
+   \centering 
+    \caption{実装するコマンド}
+    \label{tab:commands}
+    \begin{tabular}{|l|ll|l|}
+    \hline
+      \textbf{コマンド} & \textbf{意味} &        & \textbf{備考} \\
+    \hline\hline
+      \verb|%Q|   & 終了                & (Quit)  & \\
+      \hline
+      \verb|%C|   & 登録件数の表示        & (C)  & \\
+    \hline
+      \verb|%P n| & 先頭から$n$件表示   & (Print) & $n$が$0$ $\to$ 全件表示，        \\
+                  &                     &         & $n$が負 $\to$ 後ろから$-n$件表示 \\
+                  \hline
+   \verb|%R file|   & \verb|file| の読み込み            & (Read)  & \\
+   \hline
+   \verb|%W file|   & \verb|file| の書き出し& (Write)  &ファイルに上書きで書き出す． \\
+   \hline
+   \verb|%F word|   & 検索結果を表示                & (Find)  & \%P と同じ形式で表示\\
+    \hline
+    \verb|%S n|   & \verb|CSV|の\verb|n|番目の項目で整列                & (Sort)  & 表示はしない\\
+    \hline
+    \verb|%D id|   & プロファイルの削除．     & (delete)  &メモリの解放を行う\\
+   \hline
+    \end{tabular}
+  \end{table}
 
 \subsection{プログラムの全体像}
 %practice7-1参照
 \subsection{名簿管理プログラムの実装方針}
-%各コマンドについて各一段落で記載する．5.3.2参照/
+\subsubsection{\%Fコマンド}
+\begin{itemize}
+  \item \textbf{機能} 引数として文字列を受け取る．引数とどれかの要素が一致するものを探索し，表示する．
+  \item \textbf{実装方針} 引数と一致するかどうかをそれぞれの要素で\texttt{strcmp}関数を用いて判定する．
+  一致した場合，表示する．この動きを\texttt{for}ループによってすべてのプロファイルで行う．
+  \item \textbf{動作確認} 適当な数のプロファイルを与える．id，誕生日，名前，住所，コメントで検索して
+  正しいものが出力されることを確認する．また，同じデータを持つものが複数あるときの動作も確認する．
+  データにないものを入力して，見つからなかった時の動きを確認する，誕生日の入力形式についても確認する．
+\end{itemize}
+\subsubsection{\%Rコマンド}
+\begin{itemize}
+  \item \textbf{機能}引数としてファイル名を受け取る．一行ずつ読み取ってプロファイルデータとして読み込み．
+  \item \textbf{実装方針} \texttt{fopen}関数によって読み取りモードでファイルを開く．
+  \texttt{fgets}関数をファイル形式に対応させて一行ずつ読み込む．読み込んだデータは\texttt{new\_profile}関数で
+  \texttt{profile}構造体形式にする．\texttt{profile\_data\_store}に格納していく．
+  \item \textbf{動作確認}適当な数プロファイルデータが入った\texttt{csv}ファイルを用意する．
+  \%Rコマンドによって読み込んで\%Pコマンドで\texttt{file}と同じ内容か確認する，
+  同じ内容を二回読み込むことで上書きになっていないかを確認する．
+\end{itemize}
+\clearpage
+\subsubsection{\%Wコマンド}
+\begin{itemize}
+  \item \textbf{機能}引数としてファイル名を受け取る．\texttt{profile\_data\_store}に格納されている\texttt{profile}を
+  引数の\texttt{file}に書き込んでいく．
+  \item \textbf{実装方針} \texttt{fopen}関数によって書き込みモードでファイルを開く．
+  \texttt{profile\_data\_store}データを\texttt{fprintf}関数で\texttt{yyyy-mm-dd}形式に変換して
+  \texttt{file}に書き込む．\texttt{for}ループによってすべてのプロファイルで行う．最後にはファイルをクローズする．
+  \item \textbf{動作確認} 適当な数のプロファイルを与える．\texttt{file}に書き込んで同じ形式になっているか確認する．
+  特に正しく改行されているか，データが入った\texttt{file}のとき上書きされるかも確認する，
+\end{itemize}
+\subsubsection{\%Sコマンド}
+\begin{itemize}
+  \item \textbf{機能} 引数としてint型の整数を受け取る．引数1,2,3,4,5それぞれでprofileのフィールドごとに
+  並び替える．ソートアルゴリズムはバブルソートを採用する．
+  \item \textbf{実装方針} \texttt{switch}文を用いてそれぞれの操作を分ける．
+  
+  比較用関数として
+  \texttt{sort\_id,birthday,name...}を用意する．比較はすべて\texttt{sprintf}関数を用いて文字列に変換してから，
+  \texttt{strcmp}関数を用いて行う．\texttt{swap\_profile}関数で並び替える．
+  \item \textbf{動作確認} 適当な数のprofileデータを与える．それぞれのフィールドで正しくソートされるかについて確認する．
+  また，1-5以外の引数の時の動きを確認する．異なるprofileデータが同じフィールドデータを持つときの
+  動きも確認する．
+\end{itemize}
+\subsubsection{\%Dコマンド}
+\begin{itemize}
+  \item \textbf{機能} 引数としてint型の整数を受け取る．引数をidとして一致するidの
+  profileを削除する．
+  \item \textbf{実装方針} 1からidが一致するものを探索する．一致するものがあれば，
+  そのprofileに次のprofileデータをコピーしていき，削除する．探索は，最後まで繰り返されるため，
+  同じidが存在した場合，削除を繰り返す．削除する前にcommentフィールドのメモリの解放をする．
+  \item \textbf{動作確認} 適当な数のプロファイルを与える．Dコマンドを実行して引数と同じものが削除されることを確認する．
+  その際，メモリが解放されたかのメッセージを確認する．
+  また，同じidのprofileを複数用意して，どのように動作するか確認する．一致するprofileがない時の動作も確認する．
+
+\end{itemize}
 \clearpage
 %--------------------------------------------------------------------%
 \section{プログラムの実装と考察}
@@ -135,7 +217,7 @@
     この関数が呼び出されると、与えられた引数を使って\texttt{profile\_data\_store}配列内のプロファイルを検索する．
 
       \begin{itemize}
-        \item \textbf{引数} 引数として文字列ポインタ\texttt{word}を受け取る。この\texttt{word}が探索する際のキーワードとなる．
+        \item \textbf{引数} 引数として文字列ポインタ\texttt{word}を受け取る．この\texttt{word}が探索する際のキーワードとなる．
         \item \textbf{動き}
         \begin{enumerate}
           \item \texttt{profile\_data\_store}配列を一つずつ見ていって、各プロファイルをチェックしていく．
@@ -147,7 +229,88 @@
           \end{enumerate}
         \end{enumerate}
       \end{itemize}
-    \subsubsection{プログラムの動作確認}
+      \subsubsection{プログラムの動作確認}
+      次のようなデータを読み込ませる．
+      \begin{verbatim}
+      5100046,The Bridge,1845-11-2,14 Seafield Road Longman Inverness,
+      SEN Unit 2.0 Open
+      5100127,Bower Primary School,1908-1-19,Bowermadden Bower Caithness,
+      01955 641225 Primary 25 2.6 Open
+      5100224,Canisbay Primary School,1928-7-5,
+      Canisbay Wick,01955 611337 Primary 56 3.5 Open
+      5100321,Castletown Primary School,1913-11-4,Castletown Thurso,
+      01847 821256 01847 821256 Primary 137 8.5 Open
+      5100429,Crossroads Primary School,1893-2-24,Dunnet Thurso,
+      01847 851629 01847 851629 Primary 29 2.4 Open
+      5100526,Dunbeath Primary School,1805-1-8,Dunbeath,
+      01593 731286 Primary 13 1.1 Open
+      \end{verbatim}
+      
+      以下のようなコマンドを実行する。
+      \begin{verbatim}
+      %F 5100046
+      %F Bower Primary School
+      %F 1928-07-05
+      %F Castletown Thurso
+      %F 01847 851629 01847 851629 Primary 29 2.4 Open
+      \end{verbatim}
+      
+      出力：
+      \begin{verbatim}
+      5100046,The Bridge,1845-11-2,14 Seafield Road Longman Inverness,
+      SEN Unit 2.0 Open
+      5100127,Bower Primary School,1908-1-19,Bowermadden Bower Caithness,
+      01955 641225 Primary 25 2.6 Open
+      5100224,Canisbay Primary School,1928-7-5,Canisbay Wick,
+      01955 611337 Primary 56 3.5 Open
+      5100321,Castletown Primary School,1913-11-4,Castletown Thurso,
+      01847 821256 01847 821256 Primary 137 8.5 Open
+      5100429,Crossroads Primary School,1893-2-24,Dunnet Thurso,
+      01847 851629 01847 851629 Primary 29 2.4 Open
+      5100526,Dunbeath Primary School,1805-1-8,Dunbeath,
+      01593 731286 Primary 13 1.1 Open
+      %F 5100046
+      idが一致しました
+      Id    : 5100046
+      Name  : The Bridge
+      Birth : 1845-11-02
+      Addr. : 14 Seafield Road Longman Inverness
+      Comm. : SEN Unit 2.0 Open
+      
+      %F Bower Primary School
+      名前,住所,コメントのいづれかがヒットしました
+      Id    : 5100127
+      Name  : Bower Primary School
+      Birth : 1908-01-19
+      Addr. : Bowermadden Bower Caithness
+      Comm. : 01955 641225 Primary 25 2.6 Open
+      
+      %F 1928-7-5
+      %F 1928-07-05
+      誕生日が一致しました
+      Id    : 5100224
+      Name  : Canisbay Primary School
+      Birth : 1928-07-05
+      Addr. : Canisbay Wick
+      Comm. : 01955 611337 Primary 56 3.5 Open
+      
+      %F Castletown Thurso
+      名前,住所,コメントのいづれかがヒットしました
+      Id    : 5100321
+      Name  : Castletown Primary School
+      Birth : 1913-11-04
+      Addr. : Castletown Thurso
+      Comm. : 01847 821256 01847 821256 Primary 137 8.5 Open
+      
+      %F 01847 851629 01847 851629 Primary 29 2.4 Open
+      名前,住所,コメントのいづれかがヒットしました
+      Id    : 5100429
+      Name  : Crossroads Primary School
+      Birth : 1893-02-24
+      Addr. : Dunnet Thurso
+      Comm. : 01847 851629 01847 851629 Primary 29 2.4 Open
+      \end{verbatim}
+      
 
     \subsubsection{実装にあたっての考察}
     この関数の実装にあたって\texttt{atoi}についてエラーが多く起こってしまったのでなぜうまくいかなかったのかについて考察する．
@@ -172,7 +335,7 @@
       ファイルの名前が引数として渡されると，\texttt{fopen}関数により引数と一致するファイルが読み取りモード\texttt{"r"}で開かれる．
       開くのに失敗したときエラーとして出力される．
       \item\textbf{ファイルからのデータ読み込み}：
-      texttt{fget}関数を使って\texttt{file}から\texttt{line}に一行ずつ格納する．
+      \texttt{fget}関数を使って\texttt{file}から\texttt{line}に一行ずつ格納する．
       その際，\texttt{subst}関数で改行文字をnull文字に変える．不要な改行をなくす．
       \item \textbf{プロファイルの作成と格納}：
       \texttt{profile\_data\_item}が\texttt{MAX\_PROFILES}以上であればエラーを返す．それ未満であれば，
@@ -199,7 +362,187 @@
 
 
     \end{itemize}
-    \subsubsection{プログラムの動作確認}
+    \subsubsection{\%Rプログラムの動作確認}
+        \%Rコマンドによって読み込んで\%Pコマンドでファイルと同じ内容か確認する。同じファイルを二回読み込むことで、データが上書きされていないことを確認する。
+        例えば、次のようなデータを含む \texttt{result\_R.csv} ファイルを用意する。
+        \begin{verbatim}
+        5100046,The Bridge,1845-11-2,14 Seafield Road Longman Inverness,
+        SEN Unit 2.0 Open
+        5100127,Bower Primary School,1908-1-19,Bowermadden Bower Caithness,
+        01955 641225 Primary 25 2.6 Open
+        5100224,Canisbay Primary School,1928-7-5,Canisbay Wick,
+        01955 611337 Primary 56 3.5 Open
+        5100321,Castletown Primary School,1913-11-4,Castletown Thurso,
+        01847 821256 01847 821256 Primary 137 8.5 Open
+        5100429,Crossroads Primary School,1893-2-24,Dunnet Thurso,
+        01847 851629 01847 851629 Primary 29 2.4 Open
+        \end{verbatim}
+
+        以下のようなコマンドを実行する。
+        \begin{verbatim}
+        %R result_R.csv
+        Data read from result_R.csv successfully.
+        %P
+        \end{verbatim}
+
+        出力:
+        \begin{verbatim}
+        Id    : 5100046
+        Name  : The Bridge
+        Birth : 1845-11-02
+        Addr. : 14 Seafield Road Longman Inverness
+        Comm. : SEN Unit 2.0 Open
+
+        Id    : 5100127
+        Name  : Bower Primary School
+        Birth : 1908-01-19
+        Addr. : Bowermadden Bower Caithness
+        Comm. : 01955 641225 Primary 25 2.6 Open
+
+        Id    : 5100224
+        Name  : Canisbay Primary School
+        Birth : 1928-07-05
+        Addr. : Canisbay Wick
+        Comm. : 01955 611337 Primary 56 3.5 Open
+
+        Id    : 5100321
+        Name  : Castletown Primary School
+        Birth : 1913-11-04
+        Addr. : Castletown Thurso
+        Comm. : 01847 821256 01847 821256 Primary 137 8.5 Open
+
+        Id    : 5100429
+        Name  : Crossroads Primary School
+        Birth : 1893-02-24
+        Addr. : Dunnet Thurso
+        Comm. : 01847 851629 01847 851629 Primary 29 2.4 Open
+        \end{verbatim}
+
+        続けて同じファイルを再度読み込む。
+        \begin{verbatim}
+        %R result_R.csv
+        Data read from result_R.csv successfully.
+        %P
+        \end{verbatim}
+
+        出力:
+        \begin{verbatim}
+        Id    : 5100046
+        Name  : The Bridge
+        Birth : 1845-11-02
+        Addr. : 14 Seafield Road Longman Inverness
+        Comm. : SEN Unit 2.0 Open
+
+        Id    : 5100127
+        Name  : Bower Primary School
+        Birth : 1908-01-19
+        Addr. : Bowermadden Bower Caithness
+        Comm. : 01955 641225 Primary 25 2.6 Open
+
+        Id    : 5100224
+        Name  : Canisbay Primary School
+        Birth : 1928-07-05
+        Addr. : Canisbay Wick
+        Comm. : 01955 611337 Primary 56 3.5 Open
+
+        Id    : 5100321
+        Name  : Castletown Primary School
+        Birth : 1913-11-04
+        Addr. : Castletown Thurso
+        Comm. : 01847 821256 01847 821256 Primary 137 8.5 Open
+
+        Id    : 5100429
+        Name  : Crossroads Primary School
+        Birth : 1893-02-24
+        Addr. : Dunnet Thurso
+        Comm. : 01847 851629 01847 851629 Primary 29 2.4 Open
+
+        Id    : 5100046
+        Name  : The Bridge
+        Birth : 1845-11-02
+        Addr. : 14 Seafield Road Longman Inverness
+        Comm. : SEN Unit 2.0 Open
+
+        Id    : 5100127
+        Name  : Bower Primary School
+        Birth : 1908-01-19
+        Addr. : Bowermadden Bower Caithness
+        Comm. : 01955 641225 Primary 25 2.6 Open
+
+        Id    : 5100224
+        Name  : Canisbay Primary School
+        Birth : 1928-07-05
+        Addr. : Canisbay Wick
+        Comm. : 01955 611337 Primary 56 3.5 Open
+
+        Id    : 5100321
+        Name  : Castletown Primary School
+        Birth : 1913-11-04
+        Addr. : Castletown Thurso
+        Comm. : 01847 821256 01847 821256 Primary 137 8.5 Open
+
+        Id    : 5100429
+        Name  : Crossroads Primary School
+        Birth : 1893-02-24
+        Addr. : Dunnet Thurso
+        Comm. : 01847 851629 01847 851629 Primary 29 2.4 Open
+        \end{verbatim}
+    
+    \subsubsection{\%Wプログラムの動作確認}
+    まず，次のようなデータを入力する．
+    \begin{verbatim}
+      5100046,The Bridge,1845-11-2,14 Seafield Road Longman Inverness,SEN Unit 2.0 Open
+      5100127,Bower Primary School,1908-1-19,Bowermadden Bower Caithness,01955 641225
+      Primary 25 2.6 Open
+      5100224,Canisbay Primary School,1928-7-5,Canisbay Wick,01955 611337 Primary 56 
+      3.5 Open
+      5100321,Castletown Primary School,1913-11-4,Castletown Thurso,
+      01847 821256 01847 821256 Primary 137 8.5 Open
+      5100429,Crossroads Primary School,1893-2-24,
+      Dunnet Thurso,01847 851629 01847 851629 Primary 29 2.4 Open
+    \end{verbatim}
+    Wコマンドを入力する．
+    \begin{verbatim}
+      %W result_W.csv
+    \end{verbatim}
+    \texttt{result\_W.csv}を確認する．
+    \begin{verbatim}
+      5100046,The Bridge,1845-11-2,14 Seafield Road Longman Inverness,
+      SEN Unit 2.0 Open
+      5100127,Bower Primary School,1908-1-19,Bowermadden Bower Caithness,
+      01955 641225 Primary 25 2.6 Open
+      5100224,Canisbay Primary School,1928-7-5,Canisbay Wick,
+      01955 611337 Primary 56 3.5 Open
+      5100321,Castletown Primary School,1913-11-4,Castletown Thurso,
+      01847 821256 01847 821256 Primary 137 8.5 Open
+      5100429,Crossroads Primary School,1893-2-24,Dunnet Thurso,
+      01847 851629 01847 851629 Primary 29 2.4 Open
+    \end{verbatim}
+    さらに，次のようなデータがすでに入った\texttt{result\_W1}ファイルを用意する．
+    \begin{verbatim}
+      5100224,Canisbay Primary School,1928-07-05,Canisbay Wick,01955 611337 
+      Primary 56 3.5 Open
+      5100321,Castletown Primary School,1913-11-04,Castletown Thurso,
+      01847 821256 01847 821256 Primary 137 8.5 Open
+    \end{verbatim}
+    次のようなデータを読み込ませる．
+    \begin{verbatim}
+      5100046,The Bridge,1845-11-02,14 Seafield Road Longman Inverness,SEN Unit 2.0 Open
+      5100127,Bower Primary School,1908-01-19,Bowermadden Bower Caithness,
+      01955 641225 Primary 25 2.6 Open
+    \end{verbatim}
+    Wコマンドを入力する．
+    \begin{verbatim}
+      %W result_W1.csv
+    \end{verbatim}
+    \texttt{result\_W1.csv}を確認すると
+    \begin{verbatim}
+      5100046,The Bridge,1845-11-02,14 Seafield Road Longman Inverness,SEN Unit 2.0 Open
+      5100127,Bower Primary School,1908-01-19,Bowermadden Bower Caithness,01955 641225
+      Primary 25 2.6 Open
+    \end{verbatim}
+    となって上書きされていることが分かる．
+    
 
     \subsubsection{実装にあたっての考察}
     この関数の実装にあたって\texttt{get\_line}関数を変更するべきか，それとも新しくすべきか考えたので考察していく．
@@ -208,7 +551,6 @@
       \item \textbf{まとめることのメリット}：
         \texttt{get\_line}関数をまとめることによって同じような関数を2回定義しなくてよいので簡潔なコードになる．
         また，エラーや修正が必要な改善が求められたときに修正箇所が少なくて済む．
-      \clearpage
       \item \textbf{まとめることのデメリット}：標準入力のときのみ追加したい事項や
       ファイルのときのみ追加したいエラーなどがあった場合に実装しづらい．また，\texttt{\%R}コマンドの時にのみしか必要ないにもかかわらず，
       多く使用されるであろう標準入力のときにも\texttt{if(file == NULL)}という条件分岐が発生するため，処理速度に影響があると推測できる．
@@ -241,7 +583,7 @@
   このソートはバブルソートのアルゴリズムに基づいている．
 
   \begin{itemize}
-    \item \textbf{引数} 引数としてint型の引数\texttt{column}を受け取る。この\texttt{column}がソートする際のキーワードとなる．
+    \item \textbf{引数} 引数としてint型の引数\texttt{column}を受け取る．この\texttt{column}がソートする際のキーワードとなる．
     \item \textbf{動き}
     \begin{enumerate}
       \item \texttt{swap\_profile}関数:メモリ効率のために構造体のポインタを通して\texttt{profile}を交換する．
@@ -262,7 +604,230 @@
   
 
     \subsubsection{プログラムの動作確認}
+    以下のようなプロファイルデータを読み込ませる．
+    \begin{verbatim}
+      5100127,Bower Primary School,1908-1-19,Bowermadden Bower Caithness,
+      01955 641225 Primary 25 2.6 Open
+      5100046,The Bridge,1845-11-2,14 Seafield Road Longman Inverness,
+      SEN Unit 2.0 Open
+      5100224,Canisbay Primary School,1928-7-5,Canisbay Wick,
+      01955 611337 Primary 56 3.5 Open
+      5100321,Castletown Primary School,1913-11-4,Castletown Thurso,
+      01847 821256 01847 821256 Primary 137 8.5 Open
+      5100429,Crossroads Primary School,1893-2-24,Dunnet Thurso,
+      01847 851629 01847 851629 Primary 29 2.4 Open
+    \end{verbatim}
+    \%Sコマンドによってそれぞれのデータでソートする．
+    \begin{verbatim}
+      %S 1
+      %P 5
+      Id    : 5100046
+      Name  : The Bridge
+      Birth : 1845-11-02
+      Addr. : 14 Seafield Road Longman Inverness
+      Comm. : SEN Unit 2.0 Open
 
+      Id    : 5100127
+      Name  : Bower Primary School
+      Birth : 1908-01-19
+      Addr. : Bowermadden Bower Caithness
+      Comm. : 01955 641225 Primary 25 2.6 Open
+
+      Id    : 5100224
+      Name  : Canisbay Primary School
+      Birth : 1928-07-05
+      Addr. : Canisbay Wick
+      Comm. : 01955 611337 Primary 56 3.5 Open
+
+      Id    : 5100321
+      Name  : Castletown Primary School
+      Birth : 1913-11-04
+      Addr. : Castletown Thurso
+      Comm. : 01847 821256 01847 821256 Primary 137 8.5 Open
+
+      Id    : 5100429
+      Name  : Crossroads Primary School
+      Birth : 1893-02-24
+      Addr. : Dunnet Thurso
+      Comm. : 01847 851629 01847 851629 Primary 29 2.4 Open
+
+      %S 2
+      %P 5
+      Id    : 5100127
+      Name  : Bower Primary School
+      Birth : 1908-01-19
+      Addr. : Bowermadden Bower Caithness
+      Comm. : 01955 641225 Primary 25 2.6 Open
+
+      Id    : 5100224
+      Name  : Canisbay Primary School
+      Birth : 1928-07-05
+      Addr. : Canisbay Wick
+      Comm. : 01955 611337 Primary 56 3.5 Open
+
+      Id    : 5100321
+      Name  : Castletown Primary School
+      Birth : 1913-11-04
+      Addr. : Castletown Thurso
+      Comm. : 01847 821256 01847 821256 Primary 137 8.5 Open
+
+      Id    : 5100429
+      Name  : Crossroads Primary School
+      Birth : 1893-02-24
+      Addr. : Dunnet Thurso
+      Comm. : 01847 851629 01847 851629 Primary 29 2.4 Open
+
+      Id    : 5100046
+      Name  : The Bridge
+      Birth : 1845-11-02
+      Addr. : 14 Seafield Road Longman Inverness
+      Comm. : SEN Unit 2.0 Open
+
+      %S 3
+      %P 5
+      Id    : 5100046
+      Name  : The Bridge
+      Birth : 1845-11-02
+      Addr. : 14 Seafield Road Longman Inverness
+      Comm. : SEN Unit 2.0 Open
+
+      Id    : 5100429
+      Name  : Crossroads Primary School
+      Birth : 1893-02-24
+      Addr. : Dunnet Thurso
+      Comm. : 01847 851629 01847 851629 Primary 29 2.4 Open
+
+      Id    : 5100127
+      Name  : Bower Primary School
+      Birth : 1908-01-19
+      Addr. : Bowermadden Bower Caithness
+      Comm. : 01955 641225 Primary 25 2.6 Open
+
+      Id    : 5100321
+      Name  : Castletown Primary School
+      Birth : 1913-11-04
+      Addr. : Castletown Thurso
+      Comm. : 01847 821256 01847 821256 Primary 137 8.5 Open
+
+      Id    : 5100224
+      Name  : Canisbay Primary School
+      Birth : 1928-07-05
+      Addr. : Canisbay Wick
+      Comm. : 01955 611337 Primary 56 3.5 Open
+
+      %S 4
+      %P 5
+      Id    : 5100046
+      Name  : The Bridge
+      Birth : 1845-11-02
+      Addr. : 14 Seafield Road Longman Inverness
+      Comm. : SEN Unit 2.0 Open
+
+      Id    : 5100127
+      Name  : Bower Primary School
+      Birth : 1908-01-19
+      Addr. : Bowermadden Bower Caithness
+      Comm. : 01955 641225 Primary 25 2.6 Open
+
+      Id    : 5100224
+      Name  : Canisbay Primary School
+      Birth : 1928-07-05
+      Addr. : Canisbay Wick
+      Comm. : 01955 611337 Primary 56 3.5 Open
+
+      Id    : 5100321
+      Name  : Castletown Primary School
+      Birth : 1913-11-04
+      Addr. : Castletown Thurso
+      Comm. : 01847 821256 01847 821256 Primary 137 8.5 Open
+
+      Id    : 5100429
+      Name  : Crossroads Primary School
+      Birth : 1893-02-24
+      Addr. : Dunnet Thurso
+      Comm. : 01847 851629 01847 851629 Primary 29 2.4 Open
+
+      %S 5
+      %P 5
+      Id    : 5100321
+      Name  : Castletown Primary School
+      Birth : 1913-11-04
+      Addr. : Castletown Thurso
+      Comm. : 01847 821256 01847 821256 Primary 137 8.5 Open
+
+      Id    : 5100429
+      Name  : Crossroads Primary School
+      Birth : 1893-02-24
+      Addr. : Dunnet Thurso
+      Comm. : 01847 851629 01847 851629 Primary 29 2.4 Open
+
+      Id    : 5100224
+      Name  : Canisbay Primary School
+      Birth : 1928-07-05
+      Addr. : Canisbay Wick
+      Comm. : 01955 611337 Primary 56 3.5 Open
+
+      Id    : 5100127
+      Name  : Bower Primary School
+      Birth : 1908-01-19
+      Addr. : Bowermadden Bower Caithness
+      Comm. : 01955 641225 Primary 25 2.6 Open
+
+      Id    : 5100046
+      Name  : The Bridge
+      Birth : 1845-11-02
+      Addr. : 14 Seafield Road Longman Inverness
+      Comm. : SEN Unit 2.0 Open
+    \end{verbatim}
+      同じデータを持つものが複数あるときの動作も確認する．
+      以下のようなプロファイルデータを読み込ませる．
+    \begin{verbatim}
+      5100127,Bower Primary School,1908-1-19,Bowermadden Bower Caithness,
+      01955 641225 Primary 25 2.6 Open
+      5100046,The Bridge,1845-11-2,14 Seafield Road Longman Inverness,
+      SEN Unit 2.0 Open
+      5100046,Canisbay Primary School,1928-7-5,Canisbay Wick,
+      01955 611337 Primary 56 3.5 Open
+      5100321,Castletown Primary School,1913-11-4,Castletown Thurso,
+      01847 821256 01847 821256 Primary 137 8.5 Open
+      5100046,Crossroads Primary School,1893-2-24,Dunnet Thurso,
+      01847 851629 01847 851629 Primary 29 2.4 Open
+    \end{verbatim}
+    同じidを持つ場合以下のような結果になる．
+    \begin{verbatim}
+    %S 1
+    %P
+    Id    : 5100046
+    Name  : The Bridge
+    Birth : 1845-11-02
+    Addr. : 14 Seafield Road Longman Inverness
+    Comm. : SEN Unit 2.0 Open
+
+    Id    : 5100046
+    Name  : Canisbay Primary School
+    Birth : 1928-07-05
+    Addr. : Canisbay Wick
+    Comm. : 01955 611337 Primary 56 3.5 Open
+
+    Id    : 5100046
+    Name  : Crossroads Primary School
+    Birth : 1893-02-24
+    Addr. : Dunnet Thurso
+    Comm. : 01847 851629 01847 851629 Primary 29 2.4 Open
+
+    Id    : 5100127
+    Name  : Bower Primary School
+    Birth : 1908-01-19
+    Addr. : Bowermadden Bower Caithness
+    Comm. : 01955 641225 Primary 25 2.6 Open
+
+    Id    : 5100321
+    Name  : Castletown Primary School
+    Birth : 1913-11-04
+    Addr. : Castletown Thurso
+    Comm. : 01847 821256 01847 821256 Primary 137 8.5 Open
+    \end{verbatim}
+    同じidのとき，最初にデータが入っていた順番になる．
     \subsubsection{実装にあたっての考察}
     この関数の実装にあたって計算量がどのようになっているのか気になったので各関数の計算量，改善案について考察する．
     \begin{itemize}
@@ -296,7 +861,108 @@
 
     \end{itemize}
     \subsubsection{プログラムの動作確認}
+    
+    \begin{verbatim}
+      5100046,The Bridge,1845-11-2,14 Seafield Road Longman Inverness,
+      SEN Unit 2.0 Open
+      5100127,Bower Primary School,1908-1-19,Bowermadden Bower Caithness,
+      01955 641225 Primary 25 2.6 Open
+      5100224,Canisbay Primary School,1928-7-5,Canisbay Wick,
+      01955 611337 Primary 56 3.5 Open
+      5100321,Castletown Primary School,1913-11-4,Castletown Thurso,
+      01847 821256 01847 821256 Primary 137 8.5 Open
+      5100429,Crossroads Primary School,1893-2-24,Dunnet Thurso,
+      01847 851629 01847 851629 Primary 29 2.4 Open
+    \end{verbatim}
+    \begin{verbatim}
+      %D 5100127
+      Memory was freed successfully
+      %P
+      Id    : 5100046
+      Name  : The Bridge
+      Birth : 1845-11-02
+      Addr. : 14 Seafield Road Longman Inverness
+      Comm. : SEN Unit 2.0 Open
 
+      Id    : 5100224
+      Name  : Canisbay Primary School
+      Birth : 1928-07-05
+      Addr. : Canisbay Wick
+      Comm. : 01955 611337 Primary 56 3.5 Open
+
+      Id    : 5100321
+      Name  : Castletown Primary School
+      Birth : 1913-11-04
+      Addr. : Castletown Thurso
+      Comm. : 01847 821256 01847 821256 Primary 137 8.5 Open
+
+      Id    : 5100429
+      Name  : Crossroads Primary School
+      Birth : 1893-02-24
+      Addr. : Dunnet Thurso
+      Comm. : 01847 851629 01847 851629 Primary 29 2.4 Open
+
+      %D 5100429
+      Memory was freed successfully
+      %P
+      Id    : 5100046
+      Name  : The Bridge
+      Birth : 1845-11-02
+      Addr. : 14 Seafield Road Longman Inverness
+      Comm. : SEN Unit 2.0 Open
+
+      Id    : 5100224
+      Name  : Canisbay Primary School
+      Birth : 1928-07-05
+      Addr. : Canisbay Wick
+      Comm. : 01955 611337 Primary 56 3.5 Open
+
+      Id    : 5100321
+      Name  : Castletown Primary School
+      Birth : 1913-11-04
+      Addr. : Castletown Thurso
+      Comm. : 01847 821256 01847 821256 Primary 137 8.5 Open
+
+      %D 000000
+      %P
+      Id    : 5100046
+      Name  : The Bridge
+      Birth : 1845-11-02
+      Addr. : 14 Seafield Road Longman Inverness
+      Comm. : SEN Unit 2.0 Open
+
+      Id    : 5100224
+      Name  : Canisbay Primary School
+      Birth : 1928-07-05
+      Addr. : Canisbay Wick
+      Comm. : 01955 611337 Primary 56 3.5 Open
+
+      Id    : 5100321
+      Name  : Castletown Primary School
+      Birth : 1913-11-04
+      Addr. : Castletown Thurso
+      Comm. : 01847 821256 01847 821256 Primary 137 8.5 Open
+
+    \end{verbatim}
+    \begin{verbatim}
+      5100046,The Bridge,1845-11-2,14 Seafield Road Longman Inverness,
+      SEN Unit 2.0 Open
+      5100046,The Bridge,1845-11-2,14 Seafield Road Longman Inverness,
+      SEN Unit 2.0 Open
+      5100321,Castletown Primary School,1913-11-4,Castletown Thurso,
+      01847 821256 01847 821256 Primary 137 8.5 Open
+    \end{verbatim}
+    \begin{verbatim}
+      %D 5100046
+      Memory was freed successfully
+      Memory was freed successfully
+      %P
+      Id    : 5100321
+      Name  : Castletown Primary School
+      Birth : 1913-11-04
+      Addr. : Castletown Thurso
+      Comm. : 01847 821256 01847 821256 Primary 137 8.5 Open
+    \end{verbatim}
     \subsubsection{実装にあたっての考察}
     この関数を実装するうえで計算時間が多くなってしまっているのではないかと考えたので考察する．
     \begin{itemize}
@@ -306,17 +972,140 @@
     \end{itemize}
 %--------------------------------------------------------------------%
 \section{プログラム全体の考察}\label{cosider}
-  \subsection{メモリ上のデータ配置と構造体のサイズに関する考察}\label{cosider1}
-  \subsection{エラー処理に関する考察}\label{cosider2}
+  \subsection{二分探索法の導入についての考察}\label{cosider1}
+  二分探索法は，ソートされたデータに対して効率的に検索を行うアルゴリズムである．これを導入することで得られるメリットとデメリットを挙げる．
 
+    \textbf{メリット}
+    \begin{itemize}
+    \item \textbf{検索速度}:
+    線形探索の時間計算量が$O(n)$であるのに対し，二分探索法は$O(\log n)$である。
+    このため，データのサイズが大きくなるにつれて，二分探索法の検索速度の速さが目立ってくる．
+    本プログラムでは1万近くのデータを管理するため，これは大きなメリットである．
+    \item \textbf{シンプルな実装}:
+    二分探索法はほかの検索に比べてシンプルなため実装しやすい．さらに，バグが起きたときに問題を突き止めやすい．
+    \end{itemize}
+
+    \textbf{デメリット}
+    \begin{itemize}
+    \item \textbf{ソートが必要}:
+    二分探索法のためには，データがあらかじめソートされている必要がある．
+    本プログラムのデータのソートには$O(N^2)$の時間がかかるため、
+    データがソートされていないときとされているときの探索時間の差が非常に大きい．
+    \item \textbf{動的データへの不適応}:
+    二分探索法は．上にも述べたようにデータのソートが必要である．
+    データが頻繁に追加・削除される本プログラムのような動的なデータにはあまり適していない．
+    データが変更されるたびに再ソートが必要となり，これが非効率的である．
+    \end{itemize}
+    以上のように、二分探索法は特定の条件下で非常に有用であるが，
+    使用する際には条件を十分に考慮する必要がある．
+
+\subsection{}\label{cosider2}
 
 %--------------------------------------------------------------------%
-\section{発展課題}
-  
+\section{発展課題：二分探索法(binary search)の導入}
+発展課題として全体考察で述べた二分探索法の導入を行う．
+\%Sコマンドに組み込むことで，ソートされている場合は二分探索法，
+されていない場合は従来の方法も考えた.しかしながら，\%Sコマンドが毎回ソートを確認しなければ
+ならなくなってしまうため，新しい\%Bコマンドとして実装していく．
+本課題ではidのソート用としていく．
+\subsection{実装方針}
+\begin{itemize}
+  \item \textbf{機能} 引数としてint型の整数を受け取る．引数とidが一致するprofileを探索し，表示する．
+  \item \textbf{実装方針} 引数を受け取ると，二分探索法のため，ソートされているか確認する．
+  確認すると，二分探索のアルゴリズムを開始する．見つかると\texttt{print\_profile}関数によって出力される．
+  \item \textbf{動作確認} 適当な数のプロファイルを与える．ソートされているときと，されていない時の動作を確認する．
+  されている場合，一致するものを出力するか確認する．
+  \item \textbf{比較} \%Fコマンドと比較する．比較用にidのみの\%Fコマンド，ソートされているか確認をしない\%Bコマンド，
+  それぞれ\%f，\%bとして比較用コマンドを作っていく．理論上，$n : \log(n)$の割合の実行速度になるはずである．
+\end{itemize}
+\subsection{コマンドの実装と考察(c)\texttt{\%B}コマンド}
 
+  \subsubsection{プログラムの説明}
+  この関数は、\texttt{cmd\_sort}が呼び出されると，int型の引数\texttt{column}によって
+  id，名前，誕生日，住所，備考について並び替える．なお，並び替えた後の表示の機能はない．
+  このソートはバブルソートのアルゴリズムに基づいている．
 
+      \begin{itemize}
+        \item \textbf{引数} 引数としてint型の引数\texttt{id}を受け取る．この\texttt{id}が探索する際のキーワードとなる．
+        \item \textbf{動き}
+        \begin{enumerate}
+          \item \textbf{ソート確認}：まず，\texttt{profile\_data\_store}のprofileがidで
+          ソートされているか比較文を用いて確認する．ソートされていないなら，エラー文を出力する．
+          \item \textbf{二分探索}：left,right,mid変数を用意する．その時にmidを計算しておく．
+          midが目的のidと一致していればmidを返して終了．大きければmid+1をleftとして，小さければmid-1をrightとして
+          繰り返す．最後まで見つからなかったとき-1を返す．その後見つからなかったことを出力する．
+          -1以外の時はmidのprofileを\texttt{print\_profile}関数で出力して終了する．
+        \end{enumerate}
+      \end{itemize}
+      
+
+    \subsubsection{プログラムの動作確認}
+    まず，ソートされたデータを与える．
+    \begin{verbatim}
+      1,The Bridge,1845-11-2,14 Seafield Road Longman Inverness,
+      SEN Unit 2.0 Open
+      2,Bower Primary School,1908-1-19,Bowermadden Bower Caithness,
+      01955 641225 Primary 25 2.6 Open
+      3,Canisbay Primary School,1928-7-5,Canisbay Wick,
+      01955 611337 Primary 56 3.5 Open
+    \end{verbatim}
+    1と4を探索する．
+    \begin{verbatim}
+      %B 1
+      binarysearchを行います
+      二分探索法によってこのidを持つものが見つかりました
+      ID: 1
+      Name: The Bridge
+      Birthday: 1845-11-2
+      Address: 14 Seafield Road Longman Inverness
+      Comment: SEN Unit 2.0 Open
+
+      %B 4
+      binarysearchを行います
+      このidを持つprofileは存在しません
+    \end{verbatim}
+    上のように二分探索によって探索されたことが確認できる．
+    存在しない場合は出力する．
+    次にソートされていないデータを与える．
+    \begin{verbatim}
+      1,The Bridge,1845-11-2,14 Seafield Road Longman Inverness,
+      SEN Unit 2.0 Open
+      3,Bower Primary School,1908-1-19,Bowermadden Bower Caithness,
+      01955 641225 Primary 25 2.6 Open
+      2,Canisbay Primary School,1928-7-5,Canisbay Wick,
+      01955 611337 Primary 56 3.5 Open
+    \end{verbatim}
+    \begin{verbatim}
+      %B 1
+      binarysearchを行います
+      このデータはソートされていません
+    \end{verbatim}
+    上のようにソートされていないと出力する．
+    \subsubsection{線形探索との比較}
+    比較ではfindコマンドをidのみように変えたものと
+    ソートされているか確認しない二分探索法のコマンドを
+    用意した．それぞれ探索開始時間，終了時間から
+    時間を計測できるようなプログラムになっている．
+    実験用関数は最後の章に掲載している．
+    \begin{table}[h]
+      \centering
+      \begin{tabular}{|c|c|c|c|c|c|}
+      \hline
+      インデックス & ID & 線形探索の実行時間 (\%f) & 二分探索の実行時間 (\%b) \\ \hline
+      1番目 & 5100046 & 0.000002 秒 & 0.000036 秒  \\ \hline
+      500番目 & 5250927 & 0.000077 秒 & 0.000003 秒   \\ \hline
+      1000番目 & 5506220 & 0.000014 秒 & 0.000003 秒  \\ \hline
+      2000番目 & 8242143 & 0.000022 秒 & 0.000023 秒  \\ \hline
+      2886番目 & 8681139 & 0.000375 秒 & 0.000003 秒 \\ \hline
+      \textbf{合計} & & \textbf{0.000490 秒} & \textbf{0.000068 秒}  \\ \hline
+      \end{tabular}
+      \caption{線形探索と二分探索の実行時間比較}
+      \end{table}
+  ソートされたものという限定条件があるものの合計時間にはかなりの違いがみられた．
+  それぞれ見てみると，線形探索は初めのほうは実行時間がかなり速いが，最後には約200倍
+  なっている．それ比べて二分探索は安定して早いという結果になった．
 %--------------------------------------------------------------------%
-\section{感想}
+% \section{感想}
 
 
 %--------------------------------------------------------------------%
@@ -325,7 +1114,7 @@
 
 作成したプログラムを以下に添付する．
 なお，\ref{sec:abstract}章に示した課題については，
-\ref{xxxx}章で示したようにすべて正常に動作したことを付記しておく．
+% \ref{xxxx}章で示したようにすべて正常に動作したことを付記しておく．
 
 % Verbatim environment
 % プリアンブルで \usepackage{fancyvrb} が必要．
@@ -337,26 +1126,443 @@
 \begin{Verbatim}[numbers=left, xleftmargin=10mm, numbersep=6pt,
                     fontsize=\small, baselinestretch=0.8]
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-int main()
+#define MAX_STR_LEN  69
+#define MAX 1024
+#define MAX_PROFILES 10000
+
+int subst(char *str, char c1, char c2) {
+    int count = 0;
+    while (1) {
+        if (*str == c1) {
+            *str = c2;
+            count++;
+        }
+        str++;
+        if (*str == '\0') {
+            return count;
+        }
+    }
+}
+
+int get_line(char *line) {
+    if (fgets(line, 1024, stdin) != NULL) {
+        subst(line, '\n', '\0');
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+int split(char *str, char *ret[], char sep, int max) {
+    int i = 0;
+    ret[i] = str;
+    while (*str ) {
+        if (*str == sep) {
+            *str = '\0';
+            ret[++i] = str + 1;
+            
+        } else if (*str == '\0') {
+            return i + 1;
+        }
+        str++;
+    }
+    return i + 1;
+}
+
+struct date {
+    int y;
+    int m;
+    int d;
+};
+
+struct profile {
+    int id;
+    char name[MAX_STR_LEN + 1];
+    struct date birthday;
+    char address[MAX_STR_LEN + 1];
+    char *comment;
+};
+
+struct date *new_date(struct date *d, char *str) {
+    char *ptr[3];
+
+    if (split(str, ptr, '-', 3) != 3)
+        return NULL;
+
+    d->y = atoi(ptr[0]);
+    d->m = atoi(ptr[1]);
+    d->d = atoi(ptr[2]);
+
+    return d;
+}
+
+struct profile *new_profile(struct profile *p, char *csv) {
+    char *ptr[5];
+
+    if (split(csv, ptr, ',', 5) != 5 )
+        return NULL;
+
+    p->id = atoi(ptr[0]);
+    strncpy(p->name, ptr[1], MAX_STR_LEN);
+    p->name[MAX_STR_LEN] = '\0';
+
+    if (new_date(&p->birthday, ptr[2]) == NULL)
+        return NULL;
+
+    strncpy(p->address, ptr[3], MAX_STR_LEN);
+    p->address[MAX_STR_LEN] = '\0';
+
+    p->comment = (char *)malloc(sizeof(char) * (strlen(ptr[4]) + 1));
+    if (p->comment == NULL) {
+    fprintf(stderr, "Memory allocation failed for comment.\n");
+    return NULL;
+}
+    strcpy(p->comment, ptr[4]);
+
+    return p;
+}
+
+struct profile profile_data_store[MAX_PROFILES];
+int profile_data_nitems = 0;
+void swap_profile(struct profile *p1, struct profile *p2)
 {
-    char s[4] = {'A', 'B', 'C', '\0'};
+    struct profile tmp;
 
-    printf("s = %s\n", s);
+    tmp = *p2;
+    *p2 = *p1;
+    *p1 = tmp;
+}
+void print_profile(struct profile p) {
+    printf("ID: %d\n", p.id);
+    printf("Name: %s\n", p.name);
+    printf("Birthday: %d-%d-%d\n", p.birthday.y, p.birthday.m, p.birthday.d);
+    printf("Address: %s\n", p.address);
+    printf("Comment: %s\n", p.comment);
+}
+void sort_id(struct profile *p,struct profile *q){
+    char str_p[MAX] ="";
+    char str_q[MAX]="";
+    sprintf(str_p,"%d",p->id);
+    sprintf(str_q,"%d",q->id);
+    if (strcmp(str_p,str_q)>0){
+        swap_profile(p,q);
+    }
+}
+void sort_birthday(struct profile *p,struct profile *q){
+    char str_p[MAX] ="";
+    char str_q[MAX]="";
+    sprintf(str_p,"%04d,%02d,%02d",p->birthday.y,p->birthday.m,p->birthday.d);
+    sprintf(str_q,"%04d,%02d,%02d",q->birthday.y,q->birthday.m,q->birthday.d);
+    
+    if (strcmp(str_p,str_q)>0){
+        swap_profile(p,q);
+    }
+}
+void sort_name(struct profile *p,struct profile *q){
+    char str_p[MAX] ="";
+    char str_q[MAX]="";
+    sprintf(str_p,"%s",p->name);
+    sprintf(str_q,"%s",q->name);
+    if (strcmp(str_p,str_q)>0){
+        swap_profile(p,q);
+    }
+}
+void sort_add(struct profile *p,struct profile *q){
+    char str_p[MAX] ="";
+    char str_q[MAX]="";
+    sprintf(str_p,"%s",p->address);
+    sprintf(str_q,"%s",q->address);
+    if (strcmp(str_p,str_q)>0){
+        swap_profile(p,q);
+    }
+}
+void sort_comm(struct profile *p,struct profile *q){
+    char str_p[MAX] ="";
+    char str_q[MAX]="";
+    sprintf(str_p,"%s",p->comment);
+    sprintf(str_q,"%s",q->comment);
+    if (strcmp(str_p,str_q)>0){
+        swap_profile(p,q);
+    }
+}
 
+
+void cmd_quit() {
+    exit(0);
+}
+
+void cmd_check() {
+    printf("%d profile(s)\n", profile_data_nitems);
+    
+}
+
+void cmd_print(int count) {
+    int j = 0;
+
+    if (count == 0) {
+        count = profile_data_nitems;
+    }
+    if (count < 0) {
+        count = -count;
+        if (count > profile_data_nitems) {
+            count = profile_data_nitems;
+        }
+        for (j = profile_data_nitems - count; j < profile_data_nitems; ++j) {
+            printf("Id    : %d\n", profile_data_store[j].id);
+            printf("Name  : %s\n", profile_data_store[j].name);
+            printf("Birth : %04d-%02d-%02d\n", profile_data_store[j].birthday.y, profile_data_store[j].birthday.m, profile_data_store[j].birthday.d);
+            printf("Addr. : %s\n", profile_data_store[j].address);
+            printf("Comm. : %s\n\n", profile_data_store[j].comment);
+        }
+    } else {
+        if (count > profile_data_nitems) {
+            count = profile_data_nitems;
+        }
+        for (j = 0; j < count; ++j) {
+            printf("Id    : %d\n", profile_data_store[j].id);
+            printf("Name  : %s\n", profile_data_store[j].name);
+            printf("Birth : %04d-%02d-%02d\n", profile_data_store[j].birthday.y, profile_data_store[j].birthday.m, profile_data_store[j].birthday.d);
+            printf("Addr. : %s\n", profile_data_store[j].address);
+            printf("Comm. : %s\n\n", profile_data_store[j].comment);
+        }
+    }
+}
+
+
+
+void cmd_read(char *filename) {
+    // fprintf(stderr, "Read (%%R) command is invoked with arg: '%s'\n", filename);
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        perror("Failed to open file for reading");
+        return;
+    }
+
+    char line[MAX + 1];
+    while (fgets(line, sizeof(line), file)) {
+        subst(line, '\n', '\0');
+        if (profile_data_nitems < MAX_PROFILES) {
+            struct profile new_profile_data;
+            if (new_profile(&new_profile_data, line) != NULL) {
+                profile_data_store[profile_data_nitems] = new_profile_data;
+                profile_data_nitems++;
+            } else {
+                fprintf(stderr, "Failed to create profile from line: %s\n", line);
+            }
+        } else {
+            fprintf(stderr, "Maximum number of profiles reached.\n");
+            break;
+        }
+    }
+
+    fclose(file);
+    printf("Data read from %s successfully.\n", filename);
+}
+
+void cmd_write(char *filename) {
+    // fprintf(stderr, "Write (%%W) command is invoked with arg: '%s'\n", filename);
+    FILE *file = fopen(filename, "w");
+    if (file == NULL) {
+        perror("Failed to open file for writing");
+        return;
+    }
+
+    for (int i = 0; i < profile_data_nitems; i++) {
+        struct profile *p = &profile_data_store[i];
+        fprintf(file, "%d,%s,%04d-%02d-%02d,%s,%s\n",
+                p->id,
+                p->name,
+                p->birthday.y,
+                p->birthday.m,
+                p->birthday.d,
+                p->address,
+                p->comment);
+    }
+
+    fclose(file);
+    printf("Data written to %s successfully.\n", filename);
+}
+
+void cmd_find(char *word) {
+    // fprintf(stderr, "Find (%%F) command is invoked with arg: '%s'\n", word);
+    int i;
+    struct profile *p ;
+    
+
+    for(i=0; i<sizeof(profile_data_store)/sizeof(profile_data_store[0]); i++) {
+
+        p = &profile_data_store[i];
+        char s[20];
+        sprintf(s, "%d", p->id);
+            if (strcmp(s, word) == 0){
+                
+            printf("idが一致しました\n");
+            printf("Id    : %d\n", profile_data_store[i].id);
+            printf("Name  : %s\n", profile_data_store[i].name);
+            printf("Birth : %04d-%02d-%02d\n", profile_data_store[i].birthday.y, profile_data_store[i].birthday.m, profile_data_store[i].birthday.d);
+            printf("Addr. : %s\n", profile_data_store[i].address);
+            printf("Comm. : %s\n\n", profile_data_store[i].comment);
+            continue;
+        }
+
+        
+        if (p->comment && (!strcmp(word, p->comment) || !strcmp(word, p->name) || !strcmp(word, p->address))) {
+            printf("名前,住所,コメントのいづれかがヒットしました\n");
+            printf("Id    : %d\n", profile_data_store[i].id);
+            printf("Name  : %s\n", profile_data_store[i].name);
+            printf("Birth : %04d-%02d-%02d\n", profile_data_store[i].birthday.y, profile_data_store[i].birthday.m, profile_data_store[i].birthday.d);
+            printf("Addr. : %s\n", profile_data_store[i].address);
+            printf("Comm. : %s\n\n", profile_data_store[i].comment);
+            continue;
+        }
+
+        
+        char birth[20];
+    sprintf(birth, "%04d-%02d-%02d", p->birthday.y, p->birthday.m, p->birthday.d);
+    if (!strcmp(word, birth)) {
+        printf("誕生日が一致しました\n");
+        printf("Id    : %d\n", p->id);
+        printf("Name  : %s\n", p->name);
+        printf("Birth : %04d-%02d-%02d\n", p->birthday.y, p->birthday.m, p->birthday.d);
+        printf("Addr. : %s\n", p->address);
+        printf("Comm. : %s\n\n", p->comment);
+    }
+    }
+}
+
+void cmd_sort(int column) {
+    // fprintf(stderr, "Sort (%%S) command is invoked with arg: '%d'\n", column);
+    int i = 0, j = 0;
+ 
+    switch(column){
+
+    case 1:
+            for (i = 0; i < profile_data_nitems; i++) {
+            for (j = 0; j < profile_data_nitems - 1; j++) {
+                sort_id(&profile_data_store[j],&profile_data_store[j+1]);
+                }
+            }
+            break;
+    case 2:
+        int i = 0, j = 0;
+            for (i = 0; i < profile_data_nitems; i++) {
+            for (j = 0; j < profile_data_nitems - 1; j++) {
+                sort_name(&profile_data_store[j],&profile_data_store[j+1]);
+                }
+            }
+            break;
+    case 3:
+        
+            for (i = 0; i < profile_data_nitems; i++) {
+            for (j = 0; j < profile_data_nitems - 1; j++) {
+                sort_birthday(&profile_data_store[j],&profile_data_store[j+1]);
+                }
+            }
+            break;
+    case 4:
+            for (i = 0; i < profile_data_nitems; i++) {
+            for (j = 0; j < profile_data_nitems - 1; j++) {
+                sort_add(&profile_data_store[j],&profile_data_store[j+1]);
+                }
+            }
+            break;
+    case 5:
+            for (i = 0; i < profile_data_nitems; i++) {
+            for (j = 0; j < profile_data_nitems - 1; j++) {
+                sort_comm(&profile_data_store[j],&profile_data_store[j+1]);
+                }
+            }
+        break;
+    }
+}
+void cmd_delete(int id){
+    int i=0, j=0;
+    for (i = 0; i <profile_data_nitems; i++){
+        if (profile_data_store[i].id == id){
+            free(profile_data_store[i].comment);
+            printf("Memory was freed successfully\n");
+            for(j = i; j < profile_data_nitems; j++){
+                profile_data_store[j] = profile_data_store[j+1];
+            }
+            profile_data_nitems--;
+            i--;
+        }
+
+    }
+   
+
+}
+
+void exec_command(char cmd, char *param) {
+    switch (cmd) {
+        case 'Q': cmd_quit(); break;
+        case 'C': cmd_check(); break;
+        case 'P': cmd_print(atoi(param)); break;
+        case 'R': cmd_read(param); break;
+        case 'W': cmd_write(param); break;
+        case 'F': cmd_find(param); break;
+        case 'S': cmd_sort(atoi(param)); break;
+        case 'D': cmd_delete(atoi(param)); break;
+
+        default:
+            fprintf(stderr, "Invalid command %c: ignored.\n", cmd);
+            break;
+    }
+
+}
+
+void parse_line(char *line) {
+    char cmd;
+    char *param;
+
+    if (line[0] == '%') {
+        cmd = line[1];
+        param = line + 3;
+        exec_command(cmd, param);
+    } else {
+        if (profile_data_nitems < MAX_PROFILES) {
+            struct profile new_profile_data;
+            if (new_profile(&new_profile_data, line) != NULL) {
+                profile_data_store[profile_data_nitems] = new_profile_data;
+                profile_data_nitems++;
+            } else {
+                fprintf(stderr, "Failed to create profile.\n");
+            }
+        } else {
+            fprintf(stderr, "Maximum number of profiles reached.\n");
+        }
+    }
+}
+void free_profiles() {/*メモリ解放用関数*/
+    int i = 0;
+    for (i = 0; i < profile_data_nitems; i++) {
+        free(profile_data_store[i].comment);
+    }
+}
+int main() {
+    char line[MAX + 1];
+    while (get_line(line)) {
+        parse_line(line);
+    }
+    free_profiles();
     return 0;
 }
+                   
+                    
 \end{Verbatim}
 
 %--------------------------------------------------------------------%
 % 参考文献
 %   以下は，書き方の例である．実際に，参考にした書籍等を見て書くこと．
 %   本文で引用する際は，\cite{book:algodata}などとすればよい．
-\begin{thebibliography}{99}
-  \bibitem{book:algodata} 平田富雄，アルゴリズムとデータ構造，森北出版，1990.
-  \bibitem{book:label2} 著者名，書名，出版社，発行年.
-  \bibitem{www:label3} WWWページタイトル，URL，アクセス日.
-\end{thebibliography}
+% \begin{thebibliography}{99}
+%   \bibitem{book:algodata} 平田富雄，アルゴリズムとデータ構造，森北出版，1990.
+%   \bibitem{book:label2} 著者名，書名，出版社，発行年.
+%   \bibitem{www:label3} WWWページタイトル，URL，アクセス日.
+% \end{thebibliography}
 
 %--------------------------------------------------------------------%
 %% 本文はここより上に書く（\begin{document}～\end{document}が本文である）

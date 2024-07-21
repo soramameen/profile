@@ -369,6 +369,58 @@ void cmd_delete(int id){
 
 }
 
+int binary_search(int id) {
+    int left = 0;
+    int right = profile_data_nitems - 1;
+
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+
+     
+        if (profile_data_store[mid].id == id) {
+            return mid;
+        }
+     
+        else if (profile_data_store[mid].id < id) {
+            left = mid + 1;
+        }
+ 
+        else {
+            right = mid - 1;
+        }
+    }
+
+    return -1;
+}
+
+
+int is_sorted() {
+    int i = 0;
+    for (i = 0; i < profile_data_nitems-1; i++){
+        if(profile_data_store[i].id > profile_data_store[i+1].id){
+            printf("このデータはソートされていません\n");
+            return 0;
+        }
+      
+    }
+    return 1;
+}
+void binary(int id){
+    printf("binarysearchを行います\n");
+    if (is_sorted()) {
+        int result = 0;
+        result = binary_search(id);
+        if(result == -1) {
+            printf("このidを持つprofileは存在しません\n");
+        }
+        else{
+            printf("二分探索法によってこのidを持つものが見つかりました\n");
+            print_profile(profile_data_store[result]);
+        }
+        
+    }
+}
+
 void exec_command(char cmd, char *param) {
     switch (cmd) {
         case 'Q': cmd_quit(); break;
@@ -379,6 +431,7 @@ void exec_command(char cmd, char *param) {
         case 'F': cmd_find(param); break;
         case 'S': cmd_sort(atoi(param)); break;
         case 'D': cmd_delete(atoi(param)); break;
+        case 'B': binary(atoi(param)); break;
 
         default:
             fprintf(stderr, "Invalid command %c: ignored.\n", cmd);

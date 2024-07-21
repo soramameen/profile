@@ -1,0 +1,89 @@
+5100046,The Bridge,1845-11-2,14 Seafield Road Longman Inverness,SEN Unit 2.0 Open
+5100127,Bower Primary School,1908-1-19,Bowermadden Bower Caithness,01955 641225 Primary 25 2.6 Open
+5100224,Canisbay Primary School,1928-7-5,Canisbay Wick,01955 611337 Primary 56 3.5 Open
+5100321,Castletown Primary School,1913-11-4,Castletown Thurso,01847 821256 01847 821256 Primary 137 8.5 Open
+5100429,Crossroads Primary School,1893-2-24,Dunnet Thurso,01847 851629 01847 851629 Primary 29 2.4 Open
+5100526,Dunbeath Primary School,1805-1-8,Dunbeath,01593 731286 Primary 13 1.1 Open
+%F 5100046
+%F Bower Primary School
+%F 1928-07-05
+%F Castletown Thurso
+%F 01847 851629 01847 851629 Primary 29 2.4 Open
+
+結果：
+sora@sorandows:~/pro/class/report2$ ./b
+5100046,The Bridge,1845-11-2,14 Seafield Road Longman Inverness,SEN Unit 2.0 Open
+5100127,Bower Primary School,1908-1-19,Bowermadden Bower Caithness,01955 641225 Primary 25 2.6 Open
+5100224,Canisbay Primary School,1928-7-5,Canisbay Wick,01955 611337 Primary 56 3.5 Open
+5100321,Castletown Primary School,1913-11-4,Castletown Thurso,01847 821256 01847 821256 Primary 137 8.5 Open
+5100429,Crossroads Primary School,1893-2-24,Dunnet Thurso,01847 851629 01847 851629 Primary 29 2.4 Open
+5100526,Dunbeath Primary School,1805-1-8,Dunbeath,01593 731286 Primary 13 1.1 Open
+%F 5100046
+idが一致しました
+Id    : 5100046
+Name  : The Bridge
+Birth : 1845-11-02
+Addr. : 14 Seafield Road Longman Inverness
+Comm. : SEN Unit 2.0 Open
+
+%F Bower Primary School
+名前,住所,コメントのいづれかがヒットしました
+Id    : 5100127
+Name  : Bower Primary School
+Birth : 1908-01-19
+Addr. : Bowermadden Bower Caithness
+Comm. : 01955 641225 Primary 25 2.6 Open
+
+%F 1928-7-5
+%F 1928-07-05
+誕生日が一致しました
+Id    : 5100224
+Name  : Canisbay Primary School
+Birth : 1928-07-05
+Addr. : Canisbay Wick
+Comm. : 01955 611337 Primary 56 3.5 Open
+
+%F Castletown Thurso
+名前,住所,コメントのいづれかがヒットしました
+Id    : 5100321
+Name  : Castletown Primary School
+Birth : 1913-11-04
+Addr. : Castletown Thurso
+Comm. : 01847 821256 01847 821256 Primary 137 8.5 Open
+
+%F 01847 851629 01847 851629 Primary 29 2.4 Open
+名前,住所,コメントのいづれかがヒットしました
+Id    : 5100429
+Name  : Crossroads Primary School
+Birth : 1893-02-24
+Addr. : Dunnet Thurso
+Comm. : 01847 851629 01847 851629 Primary 29 2.4 Open
+
+%F 00000
+
+-------------------------------------------------------------------------
+
+5100046,The Bridge,1845-11-2,14 Seafield Road Longman Inverness,SEN Unit 2.0 Open
+5100046,The Bridge,1845-11-2,14 Seafield Road Longman Inverness,SEN Unit 2.0 Open
+5100046,The Bridge,1845-11-2,14 Seafield Road Longman Inverness,SEN Unit 2.0 Open
+%F 5100046
+idが一致しました
+Id    : 5100046
+Name  : The Bridge
+Birth : 1845-11-02
+Addr. : 14 Seafield Road Longman Inverness
+Comm. : SEN Unit 2.0 Open
+
+idが一致しました
+Id    : 5100046
+Name  : The Bridge
+Birth : 1845-11-02
+Addr. : 14 Seafield Road Longman Inverness
+Comm. : SEN Unit 2.0 Open
+
+idが一致しました
+Id    : 5100046
+Name  : The Bridge
+Birth : 1845-11-02
+Addr. : 14 Seafield Road Longman Inverness
+Comm. : SEN Unit 2.0 Open
